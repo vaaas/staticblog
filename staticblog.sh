@@ -14,8 +14,8 @@ then
 	exit 1
 fi
 
-src="$1"
-dst="$2"
+src=$1
+dst=$2
 
 # ensure sane working environment
 if ! test -d $src/posts
@@ -42,31 +42,34 @@ fi
 # create temporary directory
 mkdir /var/tmp/staticblog/
 
-# create list pages
+# create pages
 counter=0
 pagenum=1
 args=''
-for file in `find $src/metadata -type f | sort -r`
+for file in `find $src/posts -type f | sort -r`
 do
+	# rewrite post file into metadata file
+	meta=`echo $file | sed "s/^$src\/posts\/\(.*\).html$/$src\/metadata\/\1.sh/"`
+
+	# create post file
+	$src/views/post.sh $file $meta \
+		> /var/tmp/staticblog/$file.html
+	echo "Created /var/tmp/staticblog/$file.html"
+
+	# create arguments for list pages
 	args="$args
-	$file"
+	$meta"
 	counter=$((counter+1))
 	
 	if test $counter -eq 10
 	then
+		# create list file
 		$src/views/list.sh $args \
 			> /var/tmp/staticblog/$pagenum.html
+		echo "Created /var/tmp/staticblog/$pagenum.html"
 		counter=0
 		$pagenum=$((pagenum+1))
 	fi
-done
-
-# create post pages
-for file in `find $src/posts -type f`
-do
-	meta=`echo $file | sed s/.html/.json`
-	$src/views/post.sh $file $meta \
-		> /var/tmp/staticblog/$file.html
 done
 
 # move results
