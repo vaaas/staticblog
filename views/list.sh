@@ -1,47 +1,49 @@
 #!/bin/sh
+EOF='
+'
 
-blogmeta=$1
+src=$1
 curpage=$2
 pages=$3
-. $blogmeta
 shift 3
-
-gen_link () {
-	basename $1 | sed 's/^\(.*\).sh$/\1.html/'
-}
-
-reset_variables () {
-	POST_TITLE=''
-	POST_DESCRIPTION=''
-	POST_PUBLISHED=''
-}
+. $src/views/functions.sh
+. $src/metadata/blog.sh
 
 prev () {
 	if test $curpage -gt 1
 	then
-		echo "<a id=\"prev\" href=\"$((curpage-1)).html\">Previous page</a>"
+		echo "<a id=\"prev\" href=\"$((curpage-1)).html\">← Previous</a>"
 	fi
 }
 
 next () {
 	if test $curpage -lt $pages
 	then
-		echo "<a id=\"next\" href=\"$((curpage+1)).html\">Next page</a>"
+		echo "<a id=\"next\" href=\"$((curpage+1)).html\">Next →</a>"
 	fi
 }
 
 articles () {
-	for i in $@
+	local f POST_TITLE POST_DESCRIPTION POST_PUBLISHED
+	for f in $@
 	do
-		. $i
+		. $(meta_path $f)
 		cat <<- _EOF_
 		<article>
-			<h1><a href="$(gen_link $i)">$POST_TITLE</a></h1>
-			<h2>$POST_DESCRIPTION</h2>
-			<div class="published">$POST_PUBLISHED</div>
+			<h1><a href="$(basename $f)">
+				$POST_TITLE
+			</a></h1>
+			<div class="published">
+				$POST_PUBLISHED
+			</div>
+			<div class="blurb">
+				$(extract_blurb $f)
+			</div>
 		</article>
 		_EOF_
-		reset_variables
+		POST_TITLE=''
+		POST_DESCRIPTION=''
+		POST_PUBLISHED=''
 	done
 }
 
@@ -53,15 +55,19 @@ cat <<- _EOF_
 	<meta name="description" content="$BLOG_DESCRIPTION">
 	<link rel="stylesheet" href="style.css">
 	<link rel="alternate" type="application/rss+xml" href="feed.rss">
-	<title>$BLOG_TITLE - Page $#</title>
+	<title>$BLOG_TITLE - Page $curpage</title>
 </head>
 <body>
+<header>
+	<h1><a href="/">$BLOG_TITLE</a></h1>
+	<h2>$BLOG_DESCRIPTION</h2>
+</header>
 <main id="list">
 	$(articles $@)
 </main>
 <nav>
 	$(prev)
-	<div id="curpage">Page $curpage of $pages</div>
+	<a href="#">Page $curpage of $pages</a>
 	$(next)
 </nav>
 </body>

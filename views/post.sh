@@ -1,15 +1,13 @@
 #!/bin/sh
+EOF='
+'
 
-blogmeta=$1
-postmeta=$2
-post=$3
+src=$1
+file=$2
 
-. $blogmeta
-. $postmeta
-
-gen_link () {
-	basename $1
-}
+. $src/views/functions.sh
+. $src/metadata/blog.sh
+. $(meta_path $file)
 
 cat <<- _EOF_
 <!DOCTYPE html>
@@ -23,10 +21,11 @@ cat <<- _EOF_
 </head>
 <body>
 <main id="post">
-	<h1><a href="$(gen_link $post)">$POST_TITLE</a></h1>
-	<h2>$POST_DESCRIPTION</h2>
+	<h1><a href="$(basename $file)">
+		$POST_TITLE
+	</a></h1>
 	<div class="published">$POST_PUBLISHED</div>
-	$(cat $post)
+	$(cat $file)
 </main>
 </body>
 </html>

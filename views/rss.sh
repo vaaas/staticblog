@@ -1,35 +1,28 @@
 #!/bin/sh
 EOF='
 '
-blogmeta=$1
-. $blogmeta
+src=$1
 shift 1
+. $src/views/functions.sh
+. $src/metadata/blog.sh
 
-reset_variables () {
-	POST_TITLE=''
-	POST_DESCRIPTION=''
-	POST_PUBLISHED=''
-}
-
-gen_link () {
-	dir=$1
-	base=`basename $2 | sed 's/^\(.*\).sh$/\1.html/'`
-	echo $dir/$base
-}
 
 items () {
-	for i in $@
+	local f POST_TITLE POST_DESCRIPTION POST_PUBLISHED
+	for f in $@
 	do
-		. $i
+		. $(meta_path $f)
 		cat <<- _EOF_
 		<item>
 			<title>$POST_TITLE</title>
-			<description>$POST_DESCRIPTION</description>
-			<link>$(gen_link $BLOG_URL $i)</link>
+			<description>$(extract_blurb $f)</description>
+			<link>$BLOG_URL/$(basename $f)</link>
 			<pubDate>$POST_PUBLISHED</pubDate>
 		</item>
 		_EOF_
-		reset_variables
+		POST_TITLE=''
+		POST_DESCRIPTION=''
+		POST_PUBLISHED=''
 	done
 }
 

@@ -4,19 +4,23 @@ IFS='
 '
 
 ensure_sane_arguments () {
-	if ! test -d $1
+	if test -z $1 -o  -z $2
 	then
-		echo "$1 is not a directory"
-		exit 1
-	elif ! test -d $2
-	then
-		echo "$2 is not a directory"
+		echo "Invalid arguments"
 		exit 1
 	fi
 }
 
 ensure_sane_environment () {
-	if ! test -d $src/posts
+	if ! test -d $src
+	then
+		echo "$src is not a directory"
+		exit 1
+	elif ! test -d $dst
+	then
+		echo "$dst is not a directory"
+		exit 1
+	elif ! test -d $src/posts
 	then
 		echo "$src doesn't have a posts directory"
 		exit 1
@@ -45,11 +49,10 @@ ensure_sane_environment () {
 }
 
 setup_environment () {
-	mkdir /var/tmp/staticblog/
 	# list of post files
-	files=`find $src/posts -type f -printf %f | sort -r`
+	files=$(find $src/posts -type f | sort -r)
 	# amount of post files
-	filenum=`echo $files | wc -l`
+	filenum=$(echo $files | wc -l)
 	# total amount of pages that need to be generated
 	pages=$((filenum/10))
 	if test $((pages*10)) -lt $filenum
@@ -59,28 +62,22 @@ setup_environment () {
 }
 
 loop_files () {
+	local counter pagenum args f
 	# counter till next page
 	counter=0
 	# current page
 	pagenum=1
 	# arguments to be passed to list generator
 	args=''
-	for file in $files
+	for f in $files
 	do
-		# rewrite post file into metadata file
-		meta=`echo $file | sed 's/^\(.*\).html$/\1.sh/'`
-
 		# create post file
-		/bin/sh $src/views/post.sh \
-			$src/metadata/blog.sh \
-			$src/metadata/$meta \
-			$src/posts/$file \
-			> /var/tmp/staticblog/$file
-		echo "Created /var/tmp/staticblog/$file"
+		/bin/sh $src/views/post.sh $src $f \
+			> $dst/$(basename $f)
 
 		# create arguments for list pages
 		args="$args
-		$src/metadata/$meta"
+		$f"
 	
 		counter=$((counter+1))
 
@@ -102,39 +99,26 @@ loop_files () {
 
 list_generator () {
 	# create list file
-	/bin/sh $src/views/list.sh \
-		$src/metadata/blog.sh \
-		$pagenum \
-		$pages \
-		$args \
-		> /var/tmp/staticblog/$pagenum.html
-	echo "Created /var/tmp/staticblog/$pagenum.html"
+	/bin/sh $src/views/list.sh $src $pagenum $pages $args \
+		> $dst/$pagenum.html
 
 	# the first page doubles as the RSS/Atom feed
 	if test $pagenum -eq 1
 	then
 		# create RSS feed
-		/bin/sh $src/views/rss.sh \
-			$src/metadata/blog.sh \
-			$args \
-			> /var/tmp/staticblog/feed.rss
-		echo "Created /var/tmp/staticblog/feed.rss"
+		/bin/sh $src/views/rss.sh $src $args \
+			> $dst/feed.rss
 	fi 
 }
 
-finalise () {
-	find /var/tmp/staticblog -type f -exec mv -v -t $dst -- {} +
-	rmdir /var/tmp/staticblog/
-}
-
 main () {
-	ensure_sane_arguments
+	ensure_sane_arguments $@
 	src=$1
 	dst=$2
 	ensure_sane_environment
 	setup_environment
 	loop_files
-	finalise
+	echo "Done! :)"
 }
 
 main $@
