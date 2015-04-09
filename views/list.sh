@@ -12,14 +12,14 @@ shift 3
 prev () {
 	if test $curpage -gt 1
 	then
-		echo "<a id=\"prev\" href=\"$((curpage-1)).html\">← Previous</a>"
+		echo "<a class=\"card\" id=\"prev\" href=\"$((curpage-1)).html\">← Previous</a>"
 	fi
 }
 
 next () {
 	if test $curpage -lt $pages
 	then
-		echo "<a id=\"next\" href=\"$((curpage+1)).html\">Next →</a>"
+		echo "<a class=\"card\" id=\"next\" href=\"$((curpage+1)).html\">Next →</a>"
 	fi
 }
 
@@ -29,7 +29,7 @@ articles () {
 	do
 		. $(meta_path $f)
 		cat <<- _EOF_
-		<article>
+		<article class="card">
 			<h1><a href="$(basename $f)">
 				$POST_TITLE
 			</a></h1>
@@ -39,6 +39,7 @@ articles () {
 			<div class="blurb">
 				$(extract_blurb $f)
 			</div>
+			<a class="card readmore" href="$(basename $f)">Read more</a>
 		</article>
 		_EOF_
 		POST_TITLE=''
@@ -59,6 +60,7 @@ cat <<- _EOF_
 </head>
 <body>
 <header>
+	<img src="shit_logo.svg" width="125" height="125">
 	<h1><a href="/">$BLOG_TITLE</a></h1>
 	<h2>$BLOG_DESCRIPTION</h2>
 </header>
@@ -67,7 +69,7 @@ cat <<- _EOF_
 </main>
 <nav>
 	$(prev)
-	<a href="#">Page $curpage of $pages</a>
+	<a class="card" href="#">Page $curpage of $pages</a>
 	$(next)
 </nav>
 </body>

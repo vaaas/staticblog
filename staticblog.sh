@@ -111,6 +111,10 @@ list_generator () {
 	fi 
 }
 
+copy_static () {
+	cp -r -- $src/static/* $dst
+}
+
 main () {
 	ensure_sane_arguments $@
 	src=$1
@@ -118,6 +122,7 @@ main () {
 	ensure_sane_environment
 	setup_environment
 	loop_files
+	copy_static
 	echo "Done! :)"
 }
 

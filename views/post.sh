@@ -20,6 +20,11 @@ cat <<- _EOF_
 	<title>$BLOG_TITLE - $POST_TITLE</title>
 </head>
 <body>
+<header>
+	<img src="shit_logo.svg" width="125" height="125">
+	<h1><a href="/">$BLOG_TITLE</a></h1>
+	<h2>$BLOG_DESCRIPTION</h2>
+</header>
 <main id="post">
 	<h1><a href="$(basename $file)">
 		$POST_TITLE
