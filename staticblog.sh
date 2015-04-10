@@ -99,6 +99,7 @@ loop_files () {
 			list_generator
 			counter=0
 			pagenum=$((pagenum+1))
+			args=''
 		fi
 	done
 	
