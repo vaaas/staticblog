@@ -63,7 +63,7 @@ setup_environment () {
 	# list of post files
 	files=$(find $src/posts -type f | sort -r)
 	# amount of post files
-	filenum=$(echo $files | wc -l)
+	filenum=$(echo "$files" | wc -l)
 	# total amount of pages that need to be generated
 	pages=$((filenum/10))
 	if test $((pages*10)) -lt $filenum
@@ -85,6 +85,7 @@ loop_files () {
 		# create post file
 		/bin/sh $src/views/post.sh $src $f \
 			> $dst/$(basename $f)
+		echo "Created $dst/$(basename $f)"
 
 		# create arguments for list pages
 		args="$args
@@ -112,6 +113,7 @@ list_generator () {
 	# create list file
 	/bin/sh $src/views/list.sh $src $pagenum $pages $args \
 		> $dst/$pagenum.html
+	echo "Created $dst/$pagenum.html"
 
 	# the first page doubles as the RSS/Atom feed
 	if test $pagenum -eq 1
@@ -119,6 +121,7 @@ list_generator () {
 		# create RSS feed
 		/bin/sh $src/views/rss.sh $src $args \
 			> $dst/feed.rss
+		echo "Created $dst/feed.rss"
 	fi 
 }
 

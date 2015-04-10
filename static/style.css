@@ -84,7 +84,7 @@ article > h1:first-of-type, main#post > h1:first-of-type {
 	font-family: serif; }
 	
 article > .published::before, main#post > .published::before {
-	content: "Posted on"; }
+	content: "Posted on "; }
 	
 article > .published, main#post > .published {
 	text-align: center;
@@ -124,7 +124,7 @@ nav > a {
 	color: white;
 	background: #e91e63;
 	padding: 1em;
-	margin: 0 1em; }
+	margin: 0 0.5em; }
 
 nav > a:hover {
 	text-decoration: none; }
