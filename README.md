@@ -13,9 +13,9 @@ posts and their metadata. Features:
 
 Running:
 
-	/bin/sh staticblog.sh $source_dir $destination_dir
+	/bin/sh staticblog.sh $source $destination
 
-Will generate files in $destination_dir based on the input from $source_dir.
+Will generate files in `$destination` based on the input from `$source`.
 
 ## How it works
 
@@ -36,22 +36,29 @@ Every 10 posts are passed to the list generator, which generates an overview
 
 ### `posts`
 
-The content of blog posts.
+Body text content of blog posts.
 
 ### `metadata`
 
-Information about these blog posts. The special blog.sh file describes the blog
-itself.
+Information about pages.
+
+#### `metadata/blog.sh`
+
+Information about the blog itself.
+
+#### `metadata/posts`
+
+Information about blog posts.
 
 ### `views`
 
 Generator scripts.
 
-## Notes
+### `static`
 
-These scripts are *only* concerned with generating HTML pages and the RSS feed,
-so they do not manage other static files (e.g. images, stylesheets), or a
-website's entire hierarchy.
+Static files copied verbatim, like images, scripts, or stylesheets.
+
+## Notes
 
 Blog posts are sorted in reverse using coreutils sort. This means the user is
 responsible for naming files sanely.
