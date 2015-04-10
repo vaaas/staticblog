@@ -27,7 +27,7 @@ articles () {
 	local f POST_TITLE POST_DESCRIPTION POST_PUBLISHED
 	for f in $@
 	do
-		. $(meta_path $f)
+		. $(meta_path $src $f)
 		cat <<- _EOF_
 		<article class="card">
 			<h1><a href="$(basename $f)">
@@ -45,6 +45,7 @@ articles () {
 		POST_TITLE=''
 		POST_DESCRIPTION=''
 		POST_PUBLISHED=''
+		POST_CATEGORIES=''
 	done
 }
 

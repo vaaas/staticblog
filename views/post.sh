@@ -7,7 +7,7 @@ file=$2
 
 . $src/views/functions.sh
 . $src/metadata/blog.sh
-. $(meta_path $file)
+. $(meta_path $src $file)
 
 cat <<- _EOF_
 <!DOCTYPE html>

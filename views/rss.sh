@@ -11,7 +11,7 @@ items () {
 	local f POST_TITLE POST_DESCRIPTION POST_PUBLISHED
 	for f in $@
 	do
-		. $(meta_path $f)
+		. $(meta_path $src $f)
 		cat <<- _EOF_
 		<item>
 			<title>$POST_TITLE</title>

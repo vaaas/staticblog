@@ -32,9 +32,18 @@ ensure_sane_environment () {
 	then
 		echo "$src doesn't have a views directory"
 		exit 1
+	elif ! test -d $src/static
+	then
+		echo "$src doesn't have a static directory"
+		exit 1
 	elif ! test -f $src/metadata/blog.sh
 	then
 		echo "$src doesn't define blog metadata"
+		exit 1
+	elif ! test -d $src/metadata/posts
+	then
+		echo "$src doesn't define post metadata"
+		exit 1
 	elif ! test -f $src/views/post.sh
 	then
 		echo "$src doesn't have a post view"
@@ -42,9 +51,11 @@ ensure_sane_environment () {
 	elif ! test -f $src/views/list.sh
 	then
 		echo "$src doesn't have a list view"
+		exit 1
 	elif ! test -f $src/views/rss.sh
 	then
 		echo "$src doesn't have a rss generator"
+		exit 1
 	fi
 }
 

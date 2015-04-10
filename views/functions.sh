@@ -1,7 +1,15 @@
 meta_path () {
-	local f
-	f=$(basename $1 | sed 's/^\(.*\).html$/\1.sh/')
-	echo $src/metadata/$f
+	local src path name reladir
+	src=$1
+	path=$2
+	name=$(basename $path | sed 's/^\(.*\).html$/\1.sh/')
+	reladir=$(realpath --relative-to $src $(dirname $path))
+	if test -z $reladir
+	then
+		echo $src/$name
+	else
+		echo $src/metadata/$reladir/$name
+	fi
 }
 
 extract_blurb () {
