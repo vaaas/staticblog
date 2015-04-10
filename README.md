@@ -30,7 +30,7 @@ Generator scripts are shell scripts using "here-document" redirection to create
 pages from a "template". To change the template, simply change the script.
 
 Every 10 posts are passed to the list generator, which generates an overview
-(headlines) of these posts. A RSS feed is also generated out of the first page.
+(headlines) of these posts. A feeds are also generated out of the first page.
 
 ## Directory structure
 
@@ -67,4 +67,3 @@ responsible for naming files sanely.
 
 - Add support for custom, non-blog pages (e.g. contact pages).
 - Add support for categories and/or tags.
-- Add support for Atom feeds.

@@ -123,6 +123,11 @@ list_generator () {
 		/bin/sh $src/views/rss.sh $src $args \
 			> $dst/feed.rss
 		echo "Created $dst/feed.rss"
+
+		# create Atom feed
+		/bin/sh $src/views/atom.sh $src $args \
+			> $dst/feed.atom
+		echo "Created $dst/feed.atom"
 	fi 
 }
 
