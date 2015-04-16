@@ -5,6 +5,33 @@
 IFS='
 '
 
+# base body template
+# input: main content
+# output: page
+render_body () {
+	cat <<- _EOF_
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="description" content="$BLOG_DESCRIPTION">
+		<link rel="stylesheet" href="style.css">
+		<link rel="alternate" type="application/rss+xml" href="feed.rss">
+		<link rel="alternate" type="application/atom+xml" href="feed.atom">
+		<title>$BLOG_TITLE - Page $curpage</title>
+	</head>
+	<body>
+	<header>
+		<img src="portrait.img" width="124" height="124">
+		<h1><a href="/">$BLOG_TITLE</a></h1>
+		<h2>$BLOG_DESCRIPTION</h2>
+	</header>
+	$(cat /dev/stdin)
+	</body>
+	</html>
+	_EOF_
+}
+
 # create the atom feed
 # $1: path to the source directory
 # output: the atom feed
@@ -150,22 +177,7 @@ render_list () {
 		done
 	}
 
-	cat <<- _EOF_
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="description" content="$BLOG_DESCRIPTION">
-		<link rel="stylesheet" href="style.css">
-		<link rel="alternate" type="application/rss+xml" href="feed.rss">
-		<title>$BLOG_TITLE - Page $curpage</title>
-	</head>
-	<body>
-	<header>
-		<img src="shit_logo.svg" width="125" height="125">
-		<h1><a href="/">$BLOG_TITLE</a></h1>
-		<h2>$BLOG_DESCRIPTION</h2>
-	</header>
+	render_body <<- _EOF_
 	<main id="list">
 		$(articles $@)
 	</main>
@@ -174,8 +186,6 @@ render_list () {
 		<a class="card" href="#">Page $curpage of $pages</a>
 		$(next)
 	</nav>
-	</body>
-	</html>
 	_EOF_
 }
 
@@ -191,22 +201,7 @@ render_post () {
 	. $src/metadata/blog.sh
 	. $(meta_path $src $f)
 
-	cat <<- _EOF_
-	<!DOCTYPE html>
-	<html>
-	<head>
-		<meta charset="utf-8">
-		<meta name="description" content="$BLOG_DESCRIPTION">
-		<link rel="stylesheet" href="style.css">
-		<link rel="alternate" type="application/rss+xml" href="feed.rss">
-		<title>$BLOG_TITLE - $POST_TITLE</title>
-	</head>
-	<body>
-	<header>
-		<img src="shit_logo.svg" width="125" height="125">
-		<h1><a href="/">$BLOG_TITLE</a></h1>
-		<h2>$BLOG_DESCRIPTION</h2>
-	</header>
+	render_body <<- _EOF_
 	<main id="post">
 		<h1><a href="$(basename $f)">
 			$POST_TITLE
@@ -214,8 +209,6 @@ render_post () {
 		<div class="published">$POST_PUBLISHED</div>
 		$(cat $f)
 	</main>
-	</body>
-	</html>
 	_EOF_
 }
 
