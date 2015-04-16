@@ -1,7 +1,255 @@
 #!/bin/sh
 
+# setting the IFS to newline for safety
+# few files contain newlines
 IFS='
 '
+
+# create the atom feed
+# $1: path to the source directory
+# output: the atom feed
+render_atom () {
+	local src items
+	src=$1
+	shift 1
+	. $src/metadata/blog.sh
+
+
+	items () {
+		local f POST_TITLE POST_DESCRIPTION POST_PUBLISHED
+		for f in $@
+		do
+			. $(meta_path $src $f)
+			cat <<- _EOF_
+			<entry>
+				<title>$POST_TITLE</title>
+				<link href="$BLOG_URL/$(basename $f)"/>
+				<updated>$POST_PUBLISHED</updated>
+				<content type="xhtml">
+					$(extract_blurb $f)
+				</content>
+			</entry>
+			_EOF_
+			POST_TITLE=''
+			POST_DESCRIPTION=''
+			POST_PUBLISHED=''
+		done
+	}
+
+	cat <<- _EOF_
+	<?xml version="1.0" encoding="UTF-8" ?>
+	<feed xmlns="http://www.w3.org/2005/Atom">
+
+	<title>$BLOG_TITLE</title>
+	<subtitle>$BLOG_DESCRIPTION</subtitle>
+	<link href="$BLOG_URL/feed.atom" rel="self"/>
+	<link href="$BLOG_URL"/>
+	<updated>$(date)</updated>
+
+	$(items)
+
+	</feed>
+	_EOF_
+}
+
+# creates the rss feed
+# $1: the source directory
+# output: the rss feed
+render_rss () {
+	local src items
+	src=$1
+	shift 1
+	. $src/metadata/blog.sh
+
+
+	items () {
+		local f POST_TITLE POST_DESCRIPTION POST_PUBLISHED
+		for f in $@
+		do
+			. $(meta_path $src $f)
+			cat <<- _EOF_
+			<item>
+				<title>$POST_TITLE</title>
+				<description>$(extract_blurb $f)</description>
+				<link>$BLOG_URL/$(basename $f)</link>
+				<pubDate>$POST_PUBLISHED</pubDate>
+			</item>
+			_EOF_
+			POST_TITLE=''
+			POST_DESCRIPTION=''
+			POST_PUBLISHED=''
+		done
+	}
+
+	cat <<- _EOF_
+	<?xml version="1.0" encoding="UTF-8" ?>
+	<rss version="2.0">
+	<channel>
+		<title>$BLOG_TITLE</title>
+		<description>$BLOG_DESCRIPTION</description>
+		<link>$BLOG_URL</link>
+		<lastBuildDate>$(date)</lastBuildDate>
+		<ttl>1440</ttl>
+		$(items $@)
+	</channel>
+	</rss>
+	_EOF_
+}
+
+# create overview pages
+# $1: the source directory
+# $2: the current page
+# $3: the total number of pages
+# [$4...$n]: the posts to be rendered
+# output: the overview page
+render_list () {
+	local src curpage pages prev next articles
+	src=$1
+	curpage=$2
+	pages=$3
+	shift 3
+	. $src/metadata/blog.sh
+
+	prev () {
+		if test $curpage -gt 1
+		then
+			echo "<a class=\"card\" id=\"prev\" href=\"$((curpage-1)).html\">← Previous</a>"
+		fi
+	}
+
+	next () {
+		if test $curpage -lt $pages
+		then
+			echo "<a class=\"card\" id=\"next\" href=\"$((curpage+1)).html\">Next →</a>"
+		fi
+	}
+
+	articles () {
+		local f POST_TITLE POST_DESCRIPTION POST_PUBLISHED
+		for f in $@
+		do
+			. $(meta_path $src $f)
+			cat <<- _EOF_
+			<article class="card">
+				<h1><a href="$(basename $f)">
+					$POST_TITLE
+				</a></h1>
+				<div class="published">
+					$POST_PUBLISHED
+				</div>
+				<div class="blurb">
+					$(extract_blurb $f)
+				</div>
+				<a class="card readmore" href="$(basename $f)">Read more</a>
+			</article>
+			_EOF_
+			POST_TITLE=''
+			POST_DESCRIPTION=''
+			POST_PUBLISHED=''
+			POST_CATEGORIES=''
+		done
+	}
+
+	cat <<- _EOF_
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="description" content="$BLOG_DESCRIPTION">
+		<link rel="stylesheet" href="style.css">
+		<link rel="alternate" type="application/rss+xml" href="feed.rss">
+		<title>$BLOG_TITLE - Page $curpage</title>
+	</head>
+	<body>
+	<header>
+		<img src="shit_logo.svg" width="125" height="125">
+		<h1><a href="/">$BLOG_TITLE</a></h1>
+		<h2>$BLOG_DESCRIPTION</h2>
+	</header>
+	<main id="list">
+		$(articles $@)
+	</main>
+	<nav>
+		$(prev)
+		<a class="card" href="#">Page $curpage of $pages</a>
+		$(next)
+	</nav>
+	</body>
+	</html>
+	_EOF_
+}
+
+# create a page of a single post
+# $1: the source directory
+# $2: the post pathname
+# output: the post page
+render_post () {
+	local src f
+	src=$1
+	f=$2
+
+	. $src/metadata/blog.sh
+	. $(meta_path $src $f)
+
+	cat <<- _EOF_
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="description" content="$BLOG_DESCRIPTION">
+		<link rel="stylesheet" href="style.css">
+		<link rel="alternate" type="application/rss+xml" href="feed.rss">
+		<title>$BLOG_TITLE - $POST_TITLE</title>
+	</head>
+	<body>
+	<header>
+		<img src="shit_logo.svg" width="125" height="125">
+		<h1><a href="/">$BLOG_TITLE</a></h1>
+		<h2>$BLOG_DESCRIPTION</h2>
+	</header>
+	<main id="post">
+		<h1><a href="$(basename $f)">
+			$POST_TITLE
+		</a></h1>
+		<div class="published">$POST_PUBLISHED</div>
+		$(cat $f)
+	</main>
+	</body>
+	</html>
+	_EOF_
+}
+
+# calcualate the pathname of the post metadata from the post name
+# $1: the source directory
+# $2: the post filepath
+# output: the metadata pathname
+meta_path () {
+	local src path name reladir
+	src=$1
+	path=$2
+	name=$(basename $path | sed 's/^\(.*\).html$/\1.sh/')
+	reladir=$(realpath --relative-to $src $(dirname $path))
+	if test -z $reladir
+	then
+		echo $src/$name
+	else
+		echo $src/metadata/$reladir/$name
+	fi
+}
+
+# truncate posts after [[MORE]] is encountered
+# $1: the post pathname
+# output: the truncated post source
+extract_blurb () {
+	local endline
+	endline=$(sed -n '/\[\[MORE\]\]/=' $1)
+	if test -z $endline
+	then
+		echo
+	else
+		head -n $endline $1
+	fi
+}
 
 ensure_sane_arguments () {
 	if test -z $1 -o  -z $2
@@ -83,7 +331,7 @@ loop_files () {
 	for f in $files
 	do
 		# create post file
-		/bin/sh $src/views/post.sh $src $f \
+		render_post $src $f \
 			> $dst/$(basename $f)
 		echo "Created $dst/$(basename $f)"
 
@@ -112,7 +360,7 @@ loop_files () {
 
 list_generator () {
 	# create list file
-	/bin/sh $src/views/list.sh $src $pagenum $pages $args \
+	render_list $src $pagenum $pages $args \
 		> $dst/$pagenum.html
 	echo "Created $dst/$pagenum.html"
 
@@ -120,12 +368,12 @@ list_generator () {
 	if test $pagenum -eq 1
 	then
 		# create RSS feed
-		/bin/sh $src/views/rss.sh $src $args \
+		render_rss $src $args \
 			> $dst/feed.rss
 		echo "Created $dst/feed.rss"
 
 		# create Atom feed
-		/bin/sh $src/views/atom.sh $src $args \
+		render_atom $src $args \
 			> $dst/feed.atom
 		echo "Created $dst/feed.atom"
 	fi 
