@@ -320,8 +320,7 @@ loop_files () {
 		echo "Created $dst/$(basename $f)"
 
 		# create arguments for list pages
-		args="$args
-		$f"
+		args=$(echo "$args\n$f")
 	
 		counter=$((counter+1))
 
