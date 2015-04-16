@@ -22,7 +22,7 @@ render_body () {
 	</head>
 	<body>
 	<header>
-		<img src="portrait.img" width="124" height="124">
+		<img src="portrait.jpg" width="124" height="124">
 		<h1><a href="/">$BLOG_TITLE</a></h1>
 		<h2>$BLOG_DESCRIPTION</h2>
 	</header>
@@ -161,9 +161,7 @@ render_list () {
 				<h1><a href="$(basename $f)">
 					$POST_TITLE
 				</a></h1>
-				<div class="published">
-					$POST_PUBLISHED
-				</div>
+				<div class="published">Posted on $POST_PUBLISHED</div>
 				<div class="blurb">
 					$(extract_blurb $f)
 				</div>
@@ -206,7 +204,7 @@ render_post () {
 		<h1><a href="$(basename $f)">
 			$POST_TITLE
 		</a></h1>
-		<div class="published">$POST_PUBLISHED</div>
+		<div class="published">Posted on $POST_PUBLISHED</div>
 		$(cat $f)
 	</main>
 	_EOF_
